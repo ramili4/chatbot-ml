@@ -6,7 +6,7 @@ pipeline {
         NEXUS_REPO = "docker-hosted"
         CONFIG_FILE = "config.json"
         MODEL_CACHE_DIR = "/var/jenkins_home/model_cache"
-        DOCKER_REGISTRY = "localhost:8082"
+        DOCKER_REGISTRY = "172.22.0.2:8082"
     }
 
     stages {
@@ -37,7 +37,7 @@ pipeline {
         stage('Check Model in Nexus') {
             steps {
                 script {
-                    def nexusUrl = "http://localhost:8082/v2/docker-hosted/ml-model-bert-tiny/tags/list"
+                    def nexusUrl = "http://172.22.0.2:8082/v2/docker-hosted/ml-model-bert-tiny/tags/list"
                     def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" ${nexusUrl}", returnStdout: true).trim()
                     if (response != "200") {
                         error "❌ Model 'ml-model-bert-tiny' not found in Nexus!"
