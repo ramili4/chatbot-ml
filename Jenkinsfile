@@ -37,7 +37,8 @@ pipeline {
         stage('Check Model in Nexus') {
             steps {
                 script {
-                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8082/v2/docker-hosted/ml-model-bert-tiny/tags/list", returnStdout: true).trim()
+                    def nexusUrl = "http://host.docker.internal:8082/v2/docker-hosted/ml-model-bert-tiny/tags/list"
+                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" ${nexusUrl}", returnStdout: true).trim()
                     if (response != "200") {
                         error "❌ Model 'ml-model-bert-tiny' not found in Nexus!"
                     } else {
@@ -46,6 +47,7 @@ pipeline {
                 }
             }
         }
+
 
 
         stage('Download Model') {
