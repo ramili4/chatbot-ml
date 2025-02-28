@@ -6,12 +6,16 @@ pipeline {
         NEXUS_REPO = "docker-hosted"
         CONFIG_FILE = "config.json"
         MODEL_CACHE_DIR = "/var/jenkins_home/model_cache"
+        DOCKER_REGISTRY = "localhost:8082"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                checkout scm
+                script {
+                    echo "Checking out the repository..."
+                    checkout scm
+                }
             }
         }
 
@@ -20,7 +24,12 @@ pipeline {
                 script {
                     def config = readJSON file: "${CONFIG_FILE}"
                     env.MODEL_NAME = config.model_name
-                    env.MODEL_URL = "${NEXUS_HOST}/repository/${NEXUS_REPO}/${env.MODEL_NAME}.tar.gz"
+                    env.MODEL_TAG = config.model_tag ?: "latest"
+                    env.MODEL_IMAGE = "${DOCKER_REGISTRY}/${NEXUS_REPO}/${env.MODEL_NAME}:${env.MODEL_TAG}"
+
+                    echo "Model Name: ${env.MODEL_NAME}"
+                    echo "Model Tag: ${env.MODEL_TAG}"
+                    echo "Model Image: ${env.MODEL_IMAGE}"
                 }
             }
         }
@@ -28,9 +37,11 @@ pipeline {
         stage('Check Model in Nexus') {
             steps {
                 script {
-                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" ${env.MODEL_URL}", returnStdout: true).trim()
+                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://${DOCKER_REGISTRY}/v2/${NEXUS_REPO}/${env.MODEL_NAME}/tags/list", returnStdout: true).trim()
                     if (response != "200") {
-                        error("Model ${env.MODEL_NAME} not found in Nexus!")
+                        error "Model ${env.MODEL_NAME} not found in Nexus!"
+                    } else {
+                        echo "Model ${env.MODEL_NAME} found in Nexus!"
                     }
                 }
             }
@@ -38,24 +49,38 @@ pipeline {
 
         stage('Download Model') {
             steps {
-                sh """
-                    mkdir -p ${MODEL_CACHE_DIR}
-                    wget -O ${MODEL_CACHE_DIR}/${env.MODEL_NAME}.tar.gz ${env.MODEL_URL}
-                    tar -xzf ${MODEL_CACHE_DIR}/${env.MODEL_NAME}.tar.gz -C model/
-                """
+                script {
+                    echo "Pulling model image from Nexus..."
+                    sh "docker pull ${env.MODEL_IMAGE}"
+                }
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                script {
+                    echo "Installing dependencies..."
+                    sh 'pip install --no-cache-dir -r requirements.txt'
+                }
             }
         }
 
         stage('Run Chatbot') {
             steps {
-                sh 'nohup python app.py &'
+                script {
+                    echo "Starting chatbot..."
+                    sh "nohup python app.py > chatbot.log 2>&1 &"
+                }
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Pipeline completed successfully!"
+        }
+        failure {
+            echo "❌ Pipeline failed!"
         }
     }
 }
