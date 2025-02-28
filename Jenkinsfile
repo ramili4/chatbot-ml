@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         NEXUS_HOST = "http://localhost:8081"
-        NEXUS_REPO = "ml-models"
+        NEXUS_REPO = "docker-hosted"
         CONFIG_FILE = "config.json"
         MODEL_CACHE_DIR = "/var/jenkins_home/model_cache"
     }
