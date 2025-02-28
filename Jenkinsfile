@@ -37,15 +37,16 @@ pipeline {
         stage('Check Model in Nexus') {
             steps {
                 script {
-                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://${DOCKER_REGISTRY}/v2/${NEXUS_REPO}/${env.MODEL_NAME}/tags/list", returnStdout: true).trim()
+                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8082/v2/docker-hosted/ml-model-bert-tiny/tags/list", returnStdout: true).trim()
                     if (response != "200") {
-                        error "Model ${env.MODEL_NAME} not found in Nexus!"
+                        error "❌ Model 'ml-model-bert-tiny' not found in Nexus!"
                     } else {
-                        echo "Model ${env.MODEL_NAME} found in Nexus!"
+                        echo "✅ Model 'ml-model-bert-tiny' found in Nexus!"
                     }
                 }
             }
         }
+
 
         stage('Download Model') {
             steps {
