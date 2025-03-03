@@ -37,17 +37,24 @@ pipeline {
         stage('Check Model in Nexus') {
             steps {
                 script {
-                    def nexusUrl = "http://localhost:8082/v2/docker-hosted/ml-model-bert-tiny/tags/list"
-                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" ${nexusUrl}", returnStdout: true).trim()
-                    if (response != "200") {
-                        error "❌ Model 'ml-model-bert-tiny' not found in Nexus!"
+                    // Use the same model name from your environment variables 
+                    def nexusUrl = "${DOCKER_REGISTRY}/v2/${NEXUS_REPO}/${env.MODEL_NAME}/tags/list"
+                    echo "Checking model at: ${nexusUrl}"
+                    
+                    // Add debug output
+                    sh "curl -v ${nexusUrl} || echo 'Connection failed'"
+                    
+                    def statusCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" ${nexusUrl}", returnStdout: true).trim()
+                    echo "Status code: ${statusCode}"
+                    
+                    if (statusCode != "200") {
+                        error "❌ Model '${env.MODEL_NAME}' not found in Nexus! Status: ${statusCode}"
                     } else {
-                        echo "✅ Model 'ml-model-bert-tiny' found in Nexus!"
+                        echo "✅ Model '${env.MODEL_NAME}' found in Nexus!"
                     }
                 }
             }
-        }
-
+        
 
 
         stage('Download Model') {
