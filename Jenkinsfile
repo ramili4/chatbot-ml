@@ -52,14 +52,13 @@ pipeline {
             }
         }
 
-        stage('Download Model') {
+       stage('Download Model') {
             steps {
                 script {
                     echo "⬇️ Pulling model image from Nexus..."
         
                     def pullStatus = sh(script: """
-                        export DOCKER_HOST='tcp://172.22.0.3:8082'
-                        docker --tlsverify=false pull ${env.MODEL_IMAGE}
+                        docker --tls=false --tlscert='' --tlskey='' pull ${env.MODEL_IMAGE}
                     """, returnStatus: true)
         
                     if (pullStatus != 0) {
@@ -70,6 +69,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Install Dependencies') {
             steps {
