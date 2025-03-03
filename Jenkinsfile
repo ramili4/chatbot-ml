@@ -56,12 +56,16 @@ pipeline {
             steps {
                 script {
                     echo "⬇️ Pulling model image from Nexus..."
-                    def pullStatus = sh(script: "docker --tlsverify=false pull ${env.MODEL_IMAGE}", returnStatus: true)
-                    
+        
+                    def pullStatus = sh(script: """
+                        export DOCKER_HOST='tcp://172.22.0.3:8082'
+                        docker --tlsverify=false pull ${env.MODEL_IMAGE}
+                    """, returnStatus: true)
+        
                     if (pullStatus != 0) {
                         error "❌ Failed to pull image ${env.MODEL_IMAGE}"
                     }
-
+        
                     echo "✅ Model image pulled successfully!"
                 }
             }
