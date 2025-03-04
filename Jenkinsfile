@@ -53,12 +53,13 @@ pipeline {
         }
 
        stage('Download Model') {
+            agent { node { label 'jenkins-node' } }
             steps {
                 script {
                     echo "⬇️ Pulling model image from Nexus..."
         
                     def pullStatus = sh(script: """
-                        docker --tls=false --tlscert='' --tlskey='' pull ${env.MODEL_IMAGE}
+                        docker pull ${env.MODEL_IMAGE}
                     """, returnStatus: true)
         
                     if (pullStatus != 0) {
