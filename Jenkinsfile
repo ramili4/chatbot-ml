@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { node { label 'jenkins-node' } }
 
     environment {
         NEXUS_HOST       = "http://localhost:8081"
@@ -53,7 +53,6 @@ pipeline {
         }
 
        stage('Download Model') {
-            agent { node { label 'jenkins-node' } }
             steps {
                 script {
                     echo "⬇️ Pulling model image from Nexus..."
