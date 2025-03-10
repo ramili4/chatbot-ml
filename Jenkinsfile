@@ -42,7 +42,6 @@ pipeline {
                     echo "🔎 Checking model in Nexus at: ${nexusUrl}"
 
                     def statusCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" ${nexusUrl}", returnStdout: true).trim()
-
                     if (statusCode == "200") {
                         echo "✅ Model '${env.MODEL_NAME}' found in Nexus!"
                     } else {
@@ -52,17 +51,16 @@ pipeline {
             }
         }
 
-        stage('Download Model') {
+        stage('Extract Model from Image') {
             steps {
                 script {
-                    echo "⬇️ Pulling model image from Nexus..."
-                    def pullStatus = sh(script: "docker pull ${env.MODEL_IMAGE}", returnStatus: true)
-                    
-                    if (pullStatus != 0) {
-                        error "❌ Failed to pull image ${env.MODEL_IMAGE}"
-                    }
-
-                    echo "✅ Model image pulled successfully!"
+                    echo "📦 Extracting model from container..."
+                    sh """
+                        docker pull ${env.MODEL_IMAGE}
+                        CONTAINER_ID=\$(docker create ${env.MODEL_IMAGE})
+                        docker cp \${CONTAINER_ID}:/app/model/model.pth ${MODEL_CACHE_DIR}/model.pth
+                        docker rm \${CONTAINER_ID}
+                    """
                 }
             }
         }
@@ -72,7 +70,7 @@ pipeline {
                 script {
                     echo "🐳 Building chatbot Docker image..."
                     sh """
-                        docker build -t ${APP_IMAGE}:latest --build-arg MODEL_IMAGE=${env.MODEL_IMAGE} .
+                        docker build -t ${APP_IMAGE}:latest --build-arg MODEL_CACHE_DIR=${MODEL_CACHE_DIR} .
                     """
                 }
             }
