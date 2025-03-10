@@ -1,9 +1,9 @@
 # Stage 1: Extract model from the downloaded image
 ARG MODEL_IMAGE
-FROM ${MODEL_IMAGE} as model-extract
+FROM ${MODEL_IMAGE} AS model-extract  # Make sure MODEL_IMAGE is properly set
 
 # Stage 2: Application image
-FROM ubuntu:18.04  # Or any base image your app needs
+FROM ubuntu:18.04  # Ensure correct `FROM` syntax
 WORKDIR /app
 
 # Install dependencies
