@@ -1,5 +1,5 @@
 pipeline {
-    agent { node { label 'jenkins-node' } }
+    agent any
 
     environment {
         NEXUS_HOST       = "http://localhost:8081"
