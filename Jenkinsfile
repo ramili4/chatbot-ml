@@ -58,7 +58,9 @@ pipeline {
                     sh """
                         docker pull ${env.MODEL_IMAGE}
                         CONTAINER_ID=\$(docker create ${env.MODEL_IMAGE})
-                        docker cp \${CONTAINER_ID}:/app/model/model.pth ${MODEL_CACHE_DIR}/model.pth
+                        MODEL_PATH="/app/models/${env.MODEL_NAME}/pytorch_model.bin"
+                        echo "Extracting model from: \$MODEL_PATH"
+                        docker cp \${CONTAINER_ID}:\$MODEL_PATH ${MODEL_CACHE_DIR}/model.pth || (docker rm \${CONTAINER_ID} && exit 1)
                         docker rm \${CONTAINER_ID}
                     """
                 }
