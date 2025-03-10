@@ -6,7 +6,8 @@ pipeline {
         NEXUS_REPO       = "docker-hosted"
         CONFIG_FILE      = "config.json"
         MODEL_CACHE_DIR  = "/var/jenkins_home/model_cache"
-        DOCKER_REGISTRY  = "localhost:8082"  
+        DOCKER_REGISTRY  = "localhost:8082"
+        APP_IMAGE        = "chatbot-app"
     }
 
     stages {
@@ -40,9 +41,9 @@ pipeline {
                     def nexusUrl = "http://${DOCKER_REGISTRY}/v2/${NEXUS_REPO}/${env.MODEL_NAME}/tags/list"
                     echo "🔎 Checking model in Nexus at: ${nexusUrl}"
 
-                    // Test connection
+                    // Check if the model exists in Nexus
                     def statusCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" ${nexusUrl}", returnStdout: true).trim()
-                    
+
                     if (statusCode == "200") {
                         echo "✅ Model '${env.MODEL_NAME}' found in Nexus!"
                     } else {
@@ -52,46 +53,39 @@ pipeline {
             }
         }
 
-       stage('Download Model') {
+        stage('Download Model') {
             steps {
                 script {
                     echo "⬇️ Pulling model image from Nexus..."
-        
-                    def pullStatus = sh(script: """
-                        docker pull ${env.MODEL_IMAGE}
-                    """, returnStatus: true)
-        
+                    def pullStatus = sh(script: "docker pull ${env.MODEL_IMAGE}", returnStatus: true)
+                    
                     if (pullStatus != 0) {
                         error "❌ Failed to pull image ${env.MODEL_IMAGE}"
                     }
-        
+
                     echo "✅ Model image pulled successfully!"
                 }
             }
         }
 
-
-      stage('Install Dependencies') {
+        stage('Build Chatbot Image') {
             steps {
                 script {
-                    echo "📦 Setting up virtual environment..."
-                    sh '''
-                        python3 -m venv venv
-                        . venv/bin/activate
-                        pip install --no-cache-dir -r requirements.txt
-                    '''
+                    echo "🐳 Building chatbot Docker image..."
+                    sh """
+                        docker build -t ${APP_IMAGE}:latest --build-arg MODEL_IMAGE=${env.MODEL_IMAGE} .
+                    """
                 }
             }
         }
 
-
-
-
         stage('Run Chatbot') {
             steps {
                 script {
-                    echo "🤖 Starting chatbot..."
-                    sh "nohup python app.py > chatbot.log 2>&1 &"
+                    echo "🤖 Running chatbot inside a container..."
+                    sh """
+                        docker run -d -p 7860:7860 --name chatbot-container ${APP_IMAGE}:latest
+                    """
                 }
             }
         }
