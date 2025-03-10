@@ -6,7 +6,6 @@ pipeline {
         NEXUS_REPO       = "docker-hosted"
         CONFIG_FILE      = "config.json"
         DOCKER_REGISTRY  = "localhost:8082"
-        MODEL_CACHE_DIR  = "/var/jenkins_home/model_cache"
         APP_IMAGE        = "chatbot-app"
     }
 
@@ -35,40 +34,16 @@ pipeline {
             }
         }
 
-        stage('Check Model in Nexus') {
-            steps {
-                script {
-                    def nexusUrl = "http://${DOCKER_REGISTRY}/v2/${NEXUS_REPO}/${env.MODEL_NAME}/tags/list"
-                    echo "🔎 Checking model in Nexus at: ${nexusUrl}"
-
-                    def statusCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" ${nexusUrl}", returnStdout: true).trim()
-                    if (statusCode == "200") {
-                        echo "✅ Model '${env.MODEL_NAME}' found in Nexus!"
-                    } else {
-                        error "❌ Model '${env.MODEL_NAME}' not found in Nexus! Status: ${statusCode}"
-                    }
-                }
-            }
-        }
-
-        stage('Build Chatbot Image') {
-            steps {
-                script {
-                    echo "🐳 Building chatbot Docker image..."
-                    sh """
-                        docker build -t ${APP_IMAGE}:${env.MODEL_TAG} --build-arg MODEL_IMAGE=${env.MODEL_IMAGE} .
-                    """
-                }
-            }
-        }
-
         stage('Run Chatbot') {
             steps {
                 script {
+                    echo "🐳 Pulling chatbot image from Nexus..."
+                    sh "docker pull ${env.MODEL_IMAGE}"
+
                     echo "🤖 Running chatbot inside a container..."
                     sh """
                         docker rm -f chatbot-container || true
-                        docker run -d -p 7860:7860 --name chatbot-container ${APP_IMAGE}:${env.MODEL_TAG}
+                        docker run -d -p 7860:7860 --name chatbot-container ${env.MODEL_IMAGE}
                     """
                 }
             }
