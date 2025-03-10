@@ -6,9 +6,11 @@ FROM ${MODEL_IMAGE} AS model
 
 # Stage 2: Application Layer
 FROM ubuntu:20.04
+
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies and avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     python3 python3-pip python3-setuptools build-essential libssl-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -25,7 +27,11 @@ RUN mkdir -p /app/models
 # Copy model files directly from the model image
 COPY --from=model /app/models /app/models
 
-# Install Python dependencies
+# Debug: List model files to verify they were copied correctly
+RUN ls -la /app/models
+
+# Install Python dependencies with explicit torch installation
+RUN pip3 install --no-cache-dir torch transformers gradio
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Expose the Gradio server port
