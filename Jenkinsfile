@@ -56,7 +56,7 @@ pipeline {
                 script {
                     echo "🐳 Building chatbot Docker image..."
                     sh """
-                        docker build -t ${APP_IMAGE}:latest --build-arg MODEL_IMAGE=${env.MODEL_IMAGE} .
+                        docker build -t ${APP_IMAGE}:${env.MODEL_TAG} --build-arg MODEL_IMAGE=${env.MODEL_IMAGE} .
                     """
                 }
             }
@@ -67,7 +67,8 @@ pipeline {
                 script {
                     echo "🤖 Running chatbot inside a container..."
                     sh """
-                        docker run -d -p 7860:7860 --name chatbot-container ${APP_IMAGE}:latest
+                        docker rm -f chatbot-container || true
+                        docker run -d -p 7860:7860 --name chatbot-container ${APP_IMAGE}:${env.MODEL_TAG}
                     """
                 }
             }
