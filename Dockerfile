@@ -5,7 +5,7 @@ ARG MODEL_IMAGE=localhost:8082/docker-hosted/ml-model-bert-tiny:latest
 FROM ${MODEL_IMAGE} AS model
 
 # Stage 2: Application Layer
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 WORKDIR /app
 
 # Install dependencies
