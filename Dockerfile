@@ -28,5 +28,8 @@ COPY --from=model /app/models /app/models
 # Install Python dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
 
+# Expose the Gradio server port
+EXPOSE 7860
+
 # Set entrypoint
 CMD ["python3", "app.py"]
