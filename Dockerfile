@@ -1,8 +1,4 @@
-# Stage 1: Extract model from the downloaded image
-ARG MODEL_IMAGE
-FROM ${MODEL_IMAGE} AS model-extract  # Make sure MODEL_IMAGE is properly set
-
-# Stage 2: Application image
+# Stage 1: Application image
 FROM ubuntu:18.04  # Ensure correct `FROM` syntax
 WORKDIR /app
 
@@ -12,8 +8,9 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the model from the extracted model image
-COPY --from=model-extract /app/model/model.pth /app/model/model.pth
+# Copy the model from the build context
+ARG MODEL_CACHE_DIR
+COPY ${MODEL_CACHE_DIR}/model.pth /app/model/model.pth
 
 # Copy application files
 COPY . /app/
