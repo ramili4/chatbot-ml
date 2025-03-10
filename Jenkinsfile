@@ -74,8 +74,9 @@ pipeline {
        stage('Install Dependencies') {
             steps {
                 script {
-                    echo "📦 Creating virtual environment and installing dependencies..."
+                    echo "📦 Installing python3-venv and setting up virtual environment..."
                     sh '''
+                        apt-get update && apt-get install -y python3-venv
                         python3 -m venv venv
                         source venv/bin/activate
                         pip install --no-cache-dir -r requirements.txt
@@ -83,6 +84,7 @@ pipeline {
                 }
             }
         }
+
 
 
         stage('Run Chatbot') {
