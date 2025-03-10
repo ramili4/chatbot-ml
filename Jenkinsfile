@@ -5,8 +5,8 @@ pipeline {
         NEXUS_HOST       = "http://localhost:8081"
         NEXUS_REPO       = "docker-hosted"
         CONFIG_FILE      = "config.json"
-        MODEL_CACHE_DIR  = "/var/jenkins_home/model_cache"
         DOCKER_REGISTRY  = "localhost:8082"
+        MODEL_CACHE_DIR  = "/var/jenkins_home/model_cache"
         APP_IMAGE        = "chatbot-app"
     }
 
@@ -51,28 +51,12 @@ pipeline {
             }
         }
 
-        stage('Extract Model from Image') {
-            steps {
-                script {
-                    echo "📦 Extracting model from container..."
-                    sh """
-                        docker pull ${env.MODEL_IMAGE}
-                        CONTAINER_ID=\$(docker create ${env.MODEL_IMAGE})
-                        MODEL_PATH="/app/models/${env.MODEL_NAME}/pytorch_model.bin"
-                        echo "Extracting model from: \$MODEL_PATH"
-                        docker cp \${CONTAINER_ID}:\$MODEL_PATH ${MODEL_CACHE_DIR}/model.pth || (docker rm \${CONTAINER_ID} && exit 1)
-                        docker rm \${CONTAINER_ID}
-                    """
-                }
-            }
-        }
-
         stage('Build Chatbot Image') {
             steps {
                 script {
                     echo "🐳 Building chatbot Docker image..."
                     sh """
-                        docker build -t ${APP_IMAGE}:latest --build-arg MODEL_CACHE_DIR=${MODEL_CACHE_DIR} .
+                        docker build -t ${APP_IMAGE}:latest --build-arg MODEL_IMAGE=${env.MODEL_IMAGE} .
                     """
                 }
             }
