@@ -1,7 +1,6 @@
-# Use a build argument for the model image
+# Define the model image argument before using it in FROM
 ARG MODEL_IMAGE=localhost:8082/docker-hosted/ml-model-bert-tiny:latest
-FROM ${MODEL_IMAGE} AS model  # Use the passed model image
-
+FROM ${MODEL_IMAGE} AS model  
 # Stage 2: Application Layer
 FROM ubuntu:18.04
 WORKDIR /app
