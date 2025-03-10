@@ -1,29 +1,25 @@
-# Use a suitable base image
-FROM python:3.9-slim
-
-# Set environment variables
+# Stage 1: Extract model from the downloaded image
 ARG MODEL_IMAGE
-ENV MODEL_CACHE_DIR="/app/model"
+FROM ${MODEL_IMAGE} as model-extract
 
-# Install necessary dependencies
-RUN apt-get update && apt-get install -y wget && \
-    rm -rf /var/lib/apt/lists/*
-
-# Create model directory
-RUN mkdir -p ${MODEL_CACHE_DIR}
-
-# Download the model dynamically from Nexus
-RUN wget -O ${MODEL_CACHE_DIR}/model.pth "${MODEL_IMAGE}"
-
-# Copy application files (Assuming the chatbot app is in the same directory)
+# Stage 2: Application image
+FROM ubuntu:18.04  # Or any base image your app needs
 WORKDIR /app
-COPY . /app
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
 
-# Expose application port (Change as needed)
-EXPOSE 7860
+# Copy the model from the extracted model image
+COPY --from=model-extract /app/model/model.pth /app/model/model.pth
 
-# Run the chatbot application
-CMD ["python", "app.py"]
+# Copy application files
+COPY . /app/
+
+# Install Python dependencies
+RUN pip3 install -r requirements.txt
+
+# Set entrypoint
+CMD ["python3", "app.py"]
