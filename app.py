@@ -3,7 +3,7 @@ from transformers import pipeline
 import os
 
 # Model path inside the container
-MODEL_PATH = "./model"
+MODEL_PATH = "/app/models"
 
 # Ensure the model directory exists
 if not os.path.exists(MODEL_PATH):
@@ -19,4 +19,6 @@ def chatbot(question, context):
 
 # Create Gradio UI
 iface = gr.Interface(fn=chatbot, inputs=["text", "text"], outputs="text")
+
+# Launch server on 0.0.0.0 to allow external access
 iface.launch(server_name="0.0.0.0", server_port=7860)
