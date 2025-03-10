@@ -6,7 +6,7 @@ pipeline {
         NEXUS_REPO       = "docker-hosted"
         CONFIG_FILE      = "config.json"
         MODEL_CACHE_DIR  = "/var/jenkins_home/model_cache"
-        DOCKER_REGISTRY  = "172.22.0.2:8082"  // Removed http:// to avoid docker pull errors
+        DOCKER_REGISTRY  = "localhost:8082"  
     }
 
     stages {
