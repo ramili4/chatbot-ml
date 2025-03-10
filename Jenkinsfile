@@ -71,18 +71,19 @@ pipeline {
         }
 
 
-       stage('Install Dependencies') {
+      stage('Install Dependencies') {
             steps {
                 script {
                     echo "📦 Setting up virtual environment..."
                     sh '''
                         python3 -m venv venv
-                        source venv/bin/activate
+                        . venv/bin/activate
                         pip install --no-cache-dir -r requirements.txt
                     '''
                 }
             }
         }
+
 
 
 
