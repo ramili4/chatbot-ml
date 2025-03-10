@@ -41,7 +41,6 @@ pipeline {
                     def nexusUrl = "http://${DOCKER_REGISTRY}/v2/${NEXUS_REPO}/${env.MODEL_NAME}/tags/list"
                     echo "🔎 Checking model in Nexus at: ${nexusUrl}"
 
-                    // Check if the model exists in Nexus
                     def statusCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" ${nexusUrl}", returnStdout: true).trim()
 
                     if (statusCode == "200") {
