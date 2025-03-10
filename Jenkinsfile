@@ -71,14 +71,19 @@ pipeline {
         }
 
 
-        stage('Install Dependencies') {
+       stage('Install Dependencies') {
             steps {
                 script {
-                    echo "📦 Installing dependencies..."
-                    sh 'pip install --no-cache-dir -r requirements.txt'
+                    echo "📦 Creating virtual environment and installing dependencies..."
+                    sh '''
+                        python3 -m venv venv
+                        source venv/bin/activate
+                        pip install --no-cache-dir -r requirements.txt
+                    '''
                 }
             }
         }
+
 
         stage('Run Chatbot') {
             steps {
