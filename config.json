@@ -1,4 +1,4 @@
 {
-    "model_name": "ml-model-bert-tiny",
-    "model_tag": "latest"
+    "model_name": "bert-small-kor-v1",
+    "model_tag": "1.0"
 }
