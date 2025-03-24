@@ -1,4 +1,4 @@
 {
-    "model_name": "ml-model-bert-small-kor-v1",
+    "model_name": "whisper-tiny",
     "model_tag": "latest"
 }
