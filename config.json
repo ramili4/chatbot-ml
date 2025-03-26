@@ -1,4 +1,4 @@
 {
-    "model_name": "ml-model-whisper-tiny",
+    "model_name": "gpt2",
     "model_tag": "latest"
 }
